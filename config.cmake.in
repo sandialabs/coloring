@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/coloring-targets.cmake")
+
+check_required_components(coloring)
+
+include(CMakeFindDependencyMacro)
