@@ -292,7 +292,8 @@ enum class legend_location {
   upper_left,
   upper_right,
   lower_left,
-  lower_right
+  lower_right,
+  outside_right
 };
 
 enum class axis_scale {
@@ -316,7 +317,6 @@ class plot_data {
 void plot(
     std::filesystem::path const& pngpath,
     plot_data& data,
-    unsigned width = 640,
     unsigned height = 480);
 
 }

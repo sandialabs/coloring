@@ -3313,6 +3313,14 @@ static void draw_legend(
         view_box.lower_left()
         + float_vec(plot_breathing_room, plot_breathing_room)
         + float_vec(extents.x(), extents.y()));
+  } else if (data.legend_location == legend_location::outside_right) {
+    box = float_box(
+        view_box.upper_right()
+        + float_vec(plot_breathing_room, 0)
+        + float_vec(0, -extents.y()),
+        view_box.upper_right()
+        + float_vec(plot_breathing_room, 0)
+        + float_vec(extents.x(), 0));
   } else {
     throw std::logic_error("unhandled legend_location option");
   }
@@ -3359,7 +3367,6 @@ static void scale_axes(plot_data& data)
 void plot(
     std::filesystem::path const& pngpath,
     plot_data& data,
-    unsigned width,
     unsigned height)
 {
   int i = 0;
@@ -3370,30 +3377,37 @@ void plot(
     }
   }
   scale_axes(data);
-  coloring::canvas canvas(width, height, white);
   float_box const data_box = compute_bounding_box(data);
   float_vec const data_extents = data_box.extents();
-  float constexpr view_xmin = plot_breathing_room
-    + plot_text_height
-    + plot_breathing_room
-    + tick_label_width
-    + plot_breathing_room;
-  float const view_xmax = width
-    - plot_breathing_room
-    - tick_label_width / 2;
   float constexpr view_ymin = plot_breathing_room
     + plot_text_height
     + plot_breathing_room
     + plot_text_height
     + plot_breathing_room;
+  float constexpr view_xmin = plot_breathing_room
+    + plot_text_height
+    + plot_breathing_room
+    + tick_label_width
+    + plot_breathing_room;
   float const view_ymax = height
     - plot_breathing_room
     - plot_text_height
     - plot_breathing_room;
+  float const view_yextent = view_ymax - view_ymin;
+  float const view_xmax = view_xmin + view_yextent;
   float_box const view_box(
       float_vec(view_xmin, view_ymin),
       float_vec(view_xmax, view_ymax));
   float_vec const view_extents = view_box.extents();
+  float xmax;
+  if (data.legend_location == legend_location::outside_right) {
+    float_vec const legend_extents = compute_legend_extents(data);
+    xmax = view_xmax + plot_breathing_room + legend_extents.x() + plot_breathing_room;
+  } else {
+    xmax = view_xmax + plot_breathing_room + tick_label_width / 2;
+  }
+  unsigned width = unsigned(std::ceil(xmax));
+  coloring::canvas canvas(width, height, white);
   for (auto& group : data.groups) {
     draw_group(canvas, view_box, data_box, group);
   }
